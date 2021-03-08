@@ -152,3 +152,6 @@
 //#define VREF_XY_PIN                       PA6
 //#define VREF_Z_PIN                        PA7
 //#define VREF_E1_PIN                       PB0
+
+// Servos
+
