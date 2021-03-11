@@ -401,7 +401,7 @@
  *   998 : Dummy Table that ALWAYS reads 25°C or the temperature defined below.
  *   999 : Dummy Table that ALWAYS reads 100°C or the temperature defined below.
  */
-#define TEMP_SENSOR_0 66
+#define TEMP_SENSOR_0 1047
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
@@ -559,7 +559,7 @@
  * Note: For Bowden Extruders make this large enough to allow load/unload.
  */
 #define PREVENT_LENGTHY_EXTRUDE
-#define EXTRUDE_MAXLENGTH 850
+#define EXTRUDE_MAXLENGTH 700
 
 //===========================================================================
 //======================== Thermal Runaway Protection =======================
@@ -1042,7 +1042,7 @@
  * A total of 3 or more adds more slow probes, taking the average.
  */
 #define MULTIPLE_PROBING 3
-//#define EXTRA_PROBING    1
+#define EXTRA_PROBING    1
 
 /**
  * Z probes require clearance when deploying, stowing, and moving between
@@ -1266,8 +1266,8 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-#define AUTO_BED_LEVELING_BILINEAR
-//#define AUTO_BED_LEVELING_UBL
+//#define AUTO_BED_LEVELING_BILINEAR
+#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
 
 /**
@@ -1535,15 +1535,37 @@
 // @section temperature
 
 // Preheat Constants
-#define PREHEAT_1_LABEL       "PLA"
-#define PREHEAT_1_TEMP_HOTEND 200
-#define PREHEAT_1_TEMP_BED     60
-#define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
+#define PREHEAT_1_LABEL         "PLA"
+#define PREHEAT_1_TEMP_HOTEND   205
+#define PREHEAT_1_TEMP_BED      60
+#define PREHEAT_1_FAN_SPEED     1 // Value from 0 to 255
 
-#define PREHEAT_2_LABEL       "ABS"
-#define PREHEAT_2_TEMP_HOTEND 240
-#define PREHEAT_2_TEMP_BED    110
+#define PREHEAT_2_LABEL         "ABS"
+#define PREHEAT_2_TEMP_HOTEND   225
+#define PREHEAT_2_TEMP_BED      110
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
+
+#define PREHEAT_3_LABEL         "PETG"
+#define PREHEAT_3_TEMP_HOTEND   240
+#define PREHEAT_3_TEMP_BED      0
+#define PREHEAT_3_FAN_SPEED     0
+
+#define PREHEAT_4_LABEL         "Nylon"
+#define PREHEAT_4_TEMP_HOTEND   260
+#define PREHEAT_4_TEMP_BED      80
+#define PREHEAT_4_FAN_SPEED     0
+
+#define PREHEAT_5_LABEL         "PC-MAX"
+#define PREHEAT_5_TEMP_HOTEND   260
+#define PREHEAT_5_TEMP_BED      100
+#define PREHEAT_5_FAN_SPEED     0
+
+#define PREHEAT_6_LABEL         "PC(3d)"
+#define PREHEAT_6_TEMP_HOTEND   280
+#define PREHEAT_6_TEMP_BED      120
+#define PREHEAT_6_FAN_SPEED     0
+
+
 
 /**
  * Nozzle Park
