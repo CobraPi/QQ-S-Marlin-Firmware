@@ -15,13 +15,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
 
 /**
- * HAL Timers for Teensy 3.5 (MK64FX512) and Teensy 3.6 (MK66FX1M0)
+ * Description: HAL for
+ * Teensy3.5 (__MK64FX512__)
+ * Teensy3.6 (__MK66FX1M0__)
  */
 
 #include <stdint.h>
@@ -45,15 +46,9 @@ typedef uint32_t hal_timer_t;
 
 #define HAL_TIMER_RATE         (FTM0_TIMER_RATE)
 
-#ifndef STEP_TIMER_NUM
-  #define STEP_TIMER_NUM        0  // Timer Index for Stepper
-#endif
-#ifndef PULSE_TIMER_NUM
-  #define PULSE_TIMER_NUM       STEP_TIMER_NUM
-#endif
-#ifndef TEMP_TIMER_NUM
-  #define TEMP_TIMER_NUM        1  // Timer Index for Temperature
-#endif
+#define STEP_TIMER_NUM 0
+#define TEMP_TIMER_NUM 1
+#define PULSE_TIMER_NUM STEP_TIMER_NUM
 
 #define TEMP_TIMER_FREQUENCY    1000
 
@@ -72,12 +67,8 @@ typedef uint32_t hal_timer_t;
 #define ENABLE_TEMPERATURE_INTERRUPT() HAL_timer_enable_interrupt(TEMP_TIMER_NUM)
 #define DISABLE_TEMPERATURE_INTERRUPT() HAL_timer_disable_interrupt(TEMP_TIMER_NUM)
 
-#ifndef HAL_STEP_TIMER_ISR
-  #define HAL_STEP_TIMER_ISR()  extern "C" void ftm0_isr() //void TC3_Handler()
-#endif
-#ifndef HAL_TEMP_TIMER_ISR
-  #define HAL_TEMP_TIMER_ISR()  extern "C" void ftm1_isr() //void TC4_Handler()
-#endif
+#define HAL_STEP_TIMER_ISR()  extern "C" void ftm0_isr() //void TC3_Handler()
+#define HAL_TEMP_TIMER_ISR()  extern "C" void ftm1_isr() //void TC4_Handler()
 
 void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency);
 

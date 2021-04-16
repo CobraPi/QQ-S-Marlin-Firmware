@@ -17,16 +17,20 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 #if defined(ARDUINO_ARCH_STM32) && !defined(STM32GENERIC)
 
 #include "HAL.h"
-#include "usb_serial.h"
 
 #include "../../inc/MarlinConfig.h"
 #include "../shared/Delay.h"
+
+#if HAS_TMC_SW_SERIAL
+  #include "SoftwareSerial.h"
+#endif
 
 #if ENABLED(SRAM_EEPROM_EMULATION)
   #if STM32F7xx
@@ -63,7 +67,7 @@ uint16_t HAL_adc_result;
 void HAL_init() {
   FastIO_init();
 
-  #if ENABLED(SDSUPPORT) && DISABLED(SDIO_SUPPORT) && (defined(SDSS) && SDSS != -1)
+  #if ENABLED(SDSUPPORT)
     OUT_WRITE(SDSS, HIGH); // Try to set SDSS inactive before any other SPI users start up
   #endif
 
@@ -72,16 +76,20 @@ void HAL_init() {
   #endif
 
   #if ENABLED(SRAM_EEPROM_EMULATION)
-    __HAL_RCC_PWR_CLK_ENABLE();
-    HAL_PWR_EnableBkUpAccess();           // Enable access to backup SRAM
-    __HAL_RCC_BKPSRAM_CLK_ENABLE();
-    LL_PWR_EnableBkUpRegulator();         // Enable backup regulator
-    while (!LL_PWR_IsActiveFlag_BRR());   // Wait until backup regulator is initialized
+  // Enable access to backup SRAM
+  __HAL_RCC_PWR_CLK_ENABLE();
+  HAL_PWR_EnableBkUpAccess();
+  __HAL_RCC_BKPSRAM_CLK_ENABLE();
+
+  // Enable backup regulator
+  LL_PWR_EnableBkUpRegulator();
+  // Wait until backup regulator is initialized
+  while (!LL_PWR_IsActiveFlag_BRR());
+  #endif // EEPROM_EMULATED_SRAM
+
+  #if HAS_TMC_SW_SERIAL
+    SoftwareSerial::setInterruptPriority(SWSERIAL_TIMER_IRQ_PRIO, 0);
   #endif
-
-  SetTimerInterruptPriorities();
-
-  TERN_(EMERGENCY_PARSER, USB_Hook_init());
 }
 
 void HAL_clear_reset_source() { __HAL_RCC_CLEAR_RESET_FLAGS(); }
@@ -122,14 +130,9 @@ extern "C" {
 
 // TODO: Make sure this doesn't cause any delay
 void HAL_adc_start_conversion(const uint8_t adc_pin) { HAL_adc_result = analogRead(adc_pin); }
+
 uint16_t HAL_adc_get_result() { return HAL_adc_result; }
 
-// Reset the system (to initiate a firmware flash)
 void flashFirmware(const int16_t) { NVIC_SystemReset(); }
-
-// Maple Compatibility
-systickCallback_t systick_user_callback;
-void systick_attach_callback(systickCallback_t cb) { systick_user_callback = cb; }
-void HAL_SYSTICK_Callback() { if (systick_user_callback) systick_user_callback(); }
 
 #endif // ARDUINO_ARCH_STM32 && !STM32GENERIC

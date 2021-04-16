@@ -16,17 +16,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 /**
- * HAL Timers for Teensy 3.5 (MK64FX512) and Teensy 3.6 (MK66FX1M0)
+ * Teensy3.5 __MK64FX512__
+ * Teensy3.6 __MK66FX1M0__
  */
 
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 
-#include "../../inc/MarlinConfig.h"
+#include "HAL.h"
+#include "timers.h"
 
 /** \brief Instruction Synchronization Barrier
   Instruction Synchronization Barrier flushes the pipeline in the processor,

@@ -17,7 +17,7 @@
  *   GNU General Public License for more details.                           *
  *                                                                          *
  *   To view a copy of the GNU General Public License, go to the following  *
- *   location: <https://www.gnu.org/licenses/>.                              *
+ *   location: <http://www.gnu.org/licenses/>.                              *
  ****************************************************************************/
 
 #include "ftdi_extended.h"
@@ -109,6 +109,7 @@ namespace FTDI {
    *  - Handles auto-repetition by sending onTouchHeld to the active screen periodically.
    *  - Plays touch feedback "click" sounds when appropriate.
    *  - Performs debouncing to supress spurious touch events.
+   *
    */
   void EventLoop::process_events() {
     // If the LCD is processing commands, don't check
@@ -139,12 +140,15 @@ namespace FTDI {
             if (UIData::flags.bits.touch_start_sound) sound.play(press_sound);
           }
 
-          // In the case in which a touch event triggered a new screen to be
-          // drawn, we don't issue a touchEnd since it would be sent to the
-          // wrong screen.
-          UIData::flags.bits.ignore_unpress = (lastScreen != current_screen.getScreen());
-        }
-        else {
+          if (lastScreen != current_screen.getScreen()) {
+            // In the case in which a touch event triggered a new screen to be
+            // drawn, we don't issue a touchEnd since it would be sent to the
+            // wrong screen.
+            UIData::flags.bits.ignore_unpress = true;
+          } else {
+            UIData::flags.bits.ignore_unpress = false;
+          }
+        } else {
           touch_timer.start();
         }
         break;

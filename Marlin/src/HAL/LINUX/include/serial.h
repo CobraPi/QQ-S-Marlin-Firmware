@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -33,6 +33,7 @@
  * Generic RingBuffer
  * T type of the buffer array
  * S size of the buffer (must be power of 2)
+ *
  */
 template <typename T, uint32_t S> class RingBuffer {
 public:
@@ -78,7 +79,6 @@ public:
 
   #if ENABLED(EMERGENCY_PARSER)
     EmergencyParser::State emergency_state;
-    static inline bool emergency_parser_enabled() { return true; }
   #endif
 
   HalSerial() { host_connected = true; }

@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -25,7 +25,7 @@
  * MegaTronics v2.0 pin assignments
  */
 
-#if NOT_TARGET(__AVR_ATmega2560__)
+#ifndef __AVR_ATmega2560__
   #error "Oops! Select 'Arduino/Genuino Mega or Mega 2560' in 'Tools > Board.'"
 #endif
 
@@ -113,10 +113,7 @@
 #define SDSS                                  53
 #define LED_PIN                               13
 #define PS_ON_PIN                             12
-
-#ifndef CASE_LIGHT_PIN
-  #define CASE_LIGHT_PIN                       2
-#endif
+#define CASE_LIGHT_PIN                         2
 
 //
 // M3/M4/M5 - Spindle/Laser Control
@@ -130,7 +127,7 @@
 //
 #define BEEPER_PIN                            64
 
-#if HAS_WIRED_LCD
+#if HAS_SPI_LCD
 
   #define LCD_PINS_RS                         14
   #define LCD_PINS_ENABLE                     15
@@ -152,4 +149,4 @@
     #define SHIFT_EN                          17
   #endif
 
-#endif // HAS_WIRED_LCD
+#endif // HAS_SPI_LCD

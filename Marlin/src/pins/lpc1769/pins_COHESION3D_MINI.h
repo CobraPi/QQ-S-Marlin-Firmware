@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -25,11 +25,17 @@
  * Cohesion3D Mini pin assignments
  */
 
-#if NOT_TARGET(MCU_LPC1769)
+#ifndef MCU_LPC1769
   #error "Oops! Make sure you have the LPC1769 environment selected in your IDE."
 #endif
 
 #define BOARD_INFO_NAME "Cohesion3D Mini"
+
+//
+// EEPROM
+//
+#define FLASH_EEPROM_EMULATION
+//#define SDCARD_EEPROM_EMULATION
 
 //
 // Servos
@@ -104,15 +110,10 @@
 // Auto fans
 //
 #define AUTO_FAN_PIN                       P2_04  // FET 4
-#ifndef E0_AUTO_FAN_PIN
-  #define E0_AUTO_FAN_PIN           AUTO_FAN_PIN
-#endif
-#ifndef E1_AUTO_FAN_PIN
-  #define E1_AUTO_FAN_PIN           AUTO_FAN_PIN
-#endif
-#ifndef E2_AUTO_FAN_PIN
-  #define E2_AUTO_FAN_PIN           AUTO_FAN_PIN
-#endif
+
+#define ORIG_E0_AUTO_FAN_PIN        AUTO_FAN_PIN
+#define ORIG_E1_AUTO_FAN_PIN        AUTO_FAN_PIN
+#define ORIG_E2_AUTO_FAN_PIN        AUTO_FAN_PIN
 
 //
 // Misc. Functions
@@ -141,7 +142,7 @@
 // connector are shared with the onboard SD card, and Marlin does not support reading
 // G-code files from the onboard SD card.
 //
-#if HAS_WIRED_LCD
+#if HAS_SPI_LCD
 
   #define BEEPER_PIN                       P0_27  // EXP2-7 - open drain
 
@@ -160,7 +161,7 @@
     #error "SDSUPPORT is not currently supported by the Cohesion3D boards"
   #endif
 
-#endif // HAS_WIRED_LCD
+#endif // HAS_SPI_LCD
 
 //
 // Ethernet pins

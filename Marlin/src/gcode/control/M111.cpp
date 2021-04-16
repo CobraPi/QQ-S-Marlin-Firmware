@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -28,18 +28,21 @@
 void GcodeSuite::M111() {
   if (parser.seen('S')) marlin_debug_flags = parser.byteval('S');
 
-  static PGMSTR(str_debug_1, STR_DEBUG_ECHO);
-  static PGMSTR(str_debug_2, STR_DEBUG_INFO);
-  static PGMSTR(str_debug_4, STR_DEBUG_ERRORS);
-  static PGMSTR(str_debug_8, STR_DEBUG_DRYRUN);
-  static PGMSTR(str_debug_16, STR_DEBUG_COMMUNICATION);
-  #if ENABLED(DEBUG_LEVELING_FEATURE)
-    static PGMSTR(str_debug_lvl, STR_DEBUG_LEVELING);
-  #endif
+  static const char str_debug_1[] PROGMEM = STR_DEBUG_ECHO,
+                    str_debug_2[] PROGMEM = STR_DEBUG_INFO,
+                    str_debug_4[] PROGMEM = STR_DEBUG_ERRORS,
+                    str_debug_8[] PROGMEM = STR_DEBUG_DRYRUN,
+                    str_debug_16[] PROGMEM = STR_DEBUG_COMMUNICATION
+                    #if ENABLED(DEBUG_LEVELING_FEATURE)
+                      , str_debug_lvl[] PROGMEM = STR_DEBUG_LEVELING
+                    #endif
+                    ;
 
   static PGM_P const debug_strings[] PROGMEM = {
-    str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16,
-    TERN_(DEBUG_LEVELING_FEATURE, str_debug_lvl)
+    str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+      , str_debug_lvl
+    #endif
   };
 
   SERIAL_ECHO_START();
@@ -55,7 +58,7 @@ void GcodeSuite::M111() {
   }
   else {
     SERIAL_ECHOPGM(STR_DEBUG_OFF);
-    #if !IS_AT90USB
+    #if !defined(__AVR__) || !defined(USBCON)
       #if ENABLED(SERIAL_STATS_RX_BUFFER_OVERRUNS)
         SERIAL_ECHOPAIR("\nBuffer Overruns: ", MYSERIAL0.buffer_overruns());
       #endif
@@ -71,7 +74,7 @@ void GcodeSuite::M111() {
       #if ENABLED(SERIAL_STATS_MAX_RX_QUEUED)
         SERIAL_ECHOPAIR("\nMax RX Queue Size: ", MYSERIAL0.rxMaxEnqueued());
       #endif
-    #endif // !IS_AT90USB
+    #endif //  !defined(__AVR__) || !defined(USBCON)
   }
   SERIAL_EOL();
 }

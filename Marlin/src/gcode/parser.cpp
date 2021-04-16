@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -28,7 +28,7 @@
 
 #include "../MarlinCore.h"
 
-#if HAS_MULTI_SERIAL
+#if NUM_SERIAL > 1
   #include "queue.h"
 #endif
 
@@ -83,7 +83,9 @@ void GCodeParser::reset() {
   string_arg = nullptr;                 // No whole line argument
   command_letter = '?';                 // No command letter
   codenum = 0;                          // No command code
-  TERN_(USE_GCODE_SUBCODES, subcode = 0); // No command sub-code
+  #if ENABLED(USE_GCODE_SUBCODES)
+    subcode = 0;                        // No command sub-code
+  #endif
   #if ENABLED(FASTER_GCODE_PARSER)
     codebits = 0;                       // No codes yet
     //ZERO(param);                      // No parameters (should be safe to comment out this line)
@@ -117,8 +119,9 @@ void GCodeParser::parse(char *p) {
   reset(); // No codes to report
 
   auto uppercase = [](char c) {
-    if (TERN0(GCODE_CASE_INSENSITIVE, WITHIN(c, 'a', 'z')))
-      c += 'A' - 'a';
+    #if ENABLED(GCODE_CASE_INSENSITIVE)
+      if (WITHIN(c, 'a', 'z')) c += 'A' - 'a';
+    #endif
     return c;
   };
 
@@ -127,7 +130,9 @@ void GCodeParser::parse(char *p) {
 
   // Skip N[-0-9] if included in the command line
   if (uppercase(*p) == 'N' && NUMERIC_SIGNED(p[1])) {
-    //TERN_(FASTER_GCODE_PARSER, set('N', p + 1)); // (optional) Set the 'N' parameter value
+    #if ENABLED(FASTER_GCODE_PARSER)
+      //set('N', p + 1);     // (optional) Set the 'N' parameter value
+    #endif
     p += 2;                  // skip N[-0-9]
     while (NUMERIC(*p)) ++p; // skip [0-9]*
     while (*p == ' ')   ++p; // skip [ ]*
@@ -147,15 +152,22 @@ void GCodeParser::parse(char *p) {
     starpos[1] = '\0';
   }
 
-  #if ANY(MARLIN_DEV_MODE, SWITCHING_TOOLHEAD, MAGNETIC_SWITCHING_TOOLHEAD, ELECTROMAGNETIC_SWITCHING_TOOLHEAD)
-    #define SIGNED_CODENUM 1
+  #if ENABLED(GCODE_MOTION_MODES)
+    #if ENABLED(ARC_SUPPORT)
+      #define GTOP 3
+    #else
+      #define GTOP 1
+    #endif
   #endif
 
   // Bail if the letter is not G, M, or T
   // (or a valid parameter for the current motion mode)
   switch (letter) {
 
-    case 'G': case 'M': case 'T': TERN_(MARLIN_DEV_MODE, case 'D':)
+    case 'G': case 'M': case 'T':
+    #if ENABLED(CANCEL_OBJECTS)
+      case 'O':
+    #endif
       // Skip spaces to get the numeric part
       while (*p == ' ') p++;
 
@@ -171,33 +183,22 @@ void GCodeParser::parse(char *p) {
       #endif
 
       // Bail if there's no command code number
-      if (!TERN(SIGNED_CODENUM, NUMERIC_SIGNED(*p), NUMERIC(*p))) return;
+      if (!NUMERIC(*p)) return;
 
       // Save the command letter at this point
       // A '?' signifies an unknown command
       command_letter = letter;
 
-      {
-        #if ENABLED(SIGNED_CODENUM)
-          int sign = 1; // Allow for a negative code like D-1 or T-1
-          if (*p == '-') { sign = -1; ++p; }
-        #endif
-
-        // Get the code number - integer digits only
-        codenum = 0;
-
-        do { codenum = codenum * 10 + *p++ - '0'; } while (NUMERIC(*p));
-
-        // Apply the sign, if any
-        TERN_(SIGNED_CODENUM, codenum *= sign);
-      }
+      // Get the code number - integer digits only
+      codenum = 0;
+      do { codenum *= 10, codenum += *p++ - '0'; } while (NUMERIC(*p));
 
       // Allow for decimal point in command
       #if ENABLED(USE_GCODE_SUBCODES)
         if (*p == '.') {
           p++;
           while (NUMERIC(*p))
-            subcode = subcode * 10 + *p++ - '0';
+          subcode *= 10, subcode += *p++ - '0';
         }
       #endif
 
@@ -205,11 +206,16 @@ void GCodeParser::parse(char *p) {
       while (*p == ' ') p++;
 
       #if ENABLED(GCODE_MOTION_MODES)
-        if (letter == 'G'
-          && (codenum <= TERN(ARC_SUPPORT, 3, 1) || codenum == 5 || TERN0(G38_PROBE_TARGET, codenum == 38))
+        if (letter == 'G' && (codenum <= GTOP || codenum == 5
+                                #if ENABLED(G38_PROBE_TARGET)
+                                  || codenum == 38
+                                #endif
+                             )
         ) {
           motion_mode_codenum = codenum;
-          TERN_(USE_GCODE_SUBCODES, motion_mode_subcode = subcode);
+          #if ENABLED(USE_GCODE_SUBCODES)
+            motion_mode_subcode = subcode;
+          #endif
         }
       #endif
 
@@ -217,16 +223,18 @@ void GCodeParser::parse(char *p) {
 
     #if ENABLED(GCODE_MOTION_MODES)
       #if ENABLED(ARC_SUPPORT)
-        case 'I' ... 'J': case 'R':
+        case 'I': case 'J': case 'R':
           if (motion_mode_codenum != 2 && motion_mode_codenum != 3) return;
       #endif
-      case 'P' ... 'Q':
+      case 'P': case 'Q':
         if (motion_mode_codenum != 5) return;
-      case 'X' ... 'Z': case 'E' ... 'F':
+      case 'X': case 'Y': case 'Z': case 'E': case 'F':
         if (motion_mode_codenum < 0) return;
         command_letter = 'G';
         codenum = motion_mode_codenum;
-        TERN_(USE_GCODE_SUBCODES, subcode = motion_mode_subcode);
+        #if ENABLED(USE_GCODE_SUBCODES)
+          subcode = motion_mode_subcode;
+        #endif
         p--; // Back up one character to use the current parameter
       break;
     #endif // GCODE_MOTION_MODES
@@ -248,7 +256,7 @@ void GCodeParser::parse(char *p) {
     #if ENABLED(EXPECTED_PRINTER_CHECK)
       case 16:
     #endif
-    case 23: case 28: case 30: case 117 ... 118: case 928:
+    case 23: case 28: case 30: case 117: case 118: case 928:
       string_arg = unescape_string(p);
       return;
     default: break;
@@ -323,9 +331,13 @@ void GCodeParser::parse(char *p) {
         #endif
       }
 
-      if (TERN0(DEBUG_GCODE_PARSER, debug)) SERIAL_EOL();
+      #if ENABLED(DEBUG_GCODE_PARSER)
+        if (debug) SERIAL_EOL();
+      #endif
 
-      TERN_(FASTER_GCODE_PARSER, set(param, valptr)); // Set parameter exists and pointer (nullptr for no value)
+      #if ENABLED(FASTER_GCODE_PARSER)
+        set(param, valptr);                     // Set parameter exists and pointer (nullptr for no value)
+      #endif
     }
     else if (!string_arg) {                     // Not A-Z? First time, keep as the string_arg
       string_arg = p - 1;

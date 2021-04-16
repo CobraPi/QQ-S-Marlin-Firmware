@@ -16,17 +16,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 /**
- * HAL Timers for Teensy 3.2 (MK20DX256)
+ * Teensy3.2 __MK20DX256__
  */
 
 #ifdef __MK20DX256__
 
-#include "../../inc/MarlinConfig.h"
+#include "HAL.h"
+#include "timers.h"
 
 /** \brief Instruction Synchronization Barrier
   Instruction Synchronization Barrier flushes the pipeline in the processor,
